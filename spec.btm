@@ -1,0 +1,328 @@
+/*
+ * Common structures
+ */
+@cast func followUserWithId as "followers.add" (userId as "user_id": String)
+
+func followUserWithId2 as "followers.add" () -> AnswerNotify
+
+func followUserWithId3 as "followers.add" (userId as "user_id": String,
+                                          anotherId: String = "")
+
+struct User as "users" {
+    let id: String
+    let name: String
+    let sex: Int
+    let age: Int
+    let city: String
+    let photoId as "photo_id": String
+    let photoURL as "photo": NSURL
+    let thumbnailURL as "photo_small": NSURL
+    let onlineStatus as "online_state": String
+    let isFollowed as "is_following": Bool
+}
+
+/*
+ * Notification center
+ */
+struct MessageNotify as "messageNotifies" {
+    let timestamp as "date": Int
+    let lastMessage as "text": String
+    let userId: String
+    let isLastMessageFromUser as "ourLast": Bool
+    let bi: String
+    let unreadCount: String
+}
+
+struct AnswerNotify as "answerNotifies": PushX, Some {
+    let timestamp as "date": Int
+    let lastMessage as "text": String
+    let userId: String
+    let isLastMessageFromUser as "ourLast": Bool
+    let bi: String
+    let unreadCount: String
+}
+
+struct FollowerNotify as "followerNotifies" {
+    let timestamp as "date": Int
+    let lastMessage as "text": String
+    let userId: String
+    let isFacebookFriend as "is_facebook": Bool
+    let bi: String
+    let unreadCount: String
+}
+
+struct UserMeta as "userMeta" {
+    let messagesBadge as "notify_badge_messages": Int = 0
+    let messagesViewTimestamp as "notify_last_read_messages": NSTimeInterval = 0
+
+    let answersBadge as "notify_last_read_people": Int = 0
+    let answersViewTimestamp as "notify_last_read_quizzes": NSTimeInterval = 0
+
+    let followersBadge as "notify_badge_people": Int = 0
+    let followersViewTimestamp as "notify_last_read_people": NSTimeInterval = 0
+}
+
+struct Contact as "contacts" {
+    let userId as "user_id": String
+    let socialFirstName as "social_first_name": String?
+    let socialLastName as "social_last_name": String?
+    let isSocialFriend as "is_social_friend": Bool = false
+    let bi: String
+}
+
+/*
+@oneway func unfollowUserWithId as "followers.delete" (userId as "user_id": String)
+
+
+rec Push
+    userMeta UserMeta?
+    users {String : User}?
+    messageNotifies {String : MessageNotify}?
+    answerNotifies {String : AnswerNotify}?
+    followersNotifies {String : FollowerNotify}?
+    contactsSearchResult {String : Contact}?
+    feedCards {String : FeedCard}?
+    questions {String : Question}?
+    feedColsMeta {String : FeedColsMeta}?
+
+met Notifications.MessagesLoad as msgNotifications
+    bi String
+    count NSNumber
+
+met Notifications.AnswersLoad as answersNotifications
+    bi String
+    count NSNumber
+
+met notifications.getFollowers as followersNotifications: FollowerNotifyResponse
+    bi String
+    count NSNumber
+
+rec FollowerNotifyResponse: WithPush
+    followersNotifies [String]?
+    push Push?
+
+met contacts.searchByName as searchByName: ContactListResponse
+    name String
+    bi String
+    count NSNumber
+
+met contacts.getContacts as getContacts: ContactListResponse
+    bi String
+    count NSNumber
+
+rec ContactListResponse: WithPush
+    push Push?
+    contactsSearchResult [String]?
+
+met Image.makeChatPhoto as makeChatPhoto: MakeImageResponse
+    blobId String
+
+rec MakeImageResponse
+    imageId String?
+
+rec MakeQuizImageResponse
+    variant String
+    id String
+    idBig String
+
+met Image.MakeQuizImage as makeQuizImage: MakeQuizImageResponse
+    fileToken String
+    variant String
+
+rec RemoteImage
+    image_id String
+    image_url String
+    thumb_url String
+
+rec ImageSearchResponse
+    imageSearchResult [String: RemoteImage]
+
+met Image.Search as imageSearch: ImageSearchResponse
+    query String
+
+rec SaveQuestionResponse
+
+met quiz.saveQuestion as saveQuestion: SaveQuestionResponse
+    rightAnswer String
+    upload1 String
+    uploadBig1 String
+    upload2 String
+    uploadBig2 String
+    question String
+    text1 String
+    text2 String
+    isOnePhoto Bool
+
+met Notifications.DeleteMessageNotify as deleteMessageNotify
+    notifyId String
+
+met Notifications.DeleteAnswerNotify as deleteAnswerNotify
+    notifyId String
+
+met UserAction.BlockUser as blockUser
+    userId String
+
+rec Question
+    question String
+    text1 String
+    photo_id1 String
+    photo1 String
+    text2 String
+    photo_id2 String
+    photo2 String
+
+met Feed.get as getFeed
+    bi String
+
+rec FeedColsMeta
+    type String
+    bi String
+
+rec FeedCard
+    type String
+    questionId String?
+    userId String?
+    bi String
+
+met Feed.getColumn as getColumn
+    bi String
+    biCol String
+
+rec FollowerUpdatedResponse
+
+met followers.add as followUserWithId: FollowerUpdatedResponse
+    user_id String
+
+met followers.delete as unfollowUserWithId: FollowerUpdatedResponse
+    user_id String
+
+rec MessageNotify
+    date String?
+    text String?
+    counter String?
+    userId String?
+    ourLast NSNumber?
+    bi String?
+    unreadCount String?
+
+rec AnswerNotify
+    date String?
+    text String?
+    counter String?
+    userId String?
+    ourLast NSNumber?
+    bi String?
+    unreadCount String?
+
+rec FollowerNotify
+    date String?
+    text String?
+    user_id String?
+    is_facebook NSNumber?
+    new NSNumber?
+    bi String?
+
+rec Contact
+    user_id String?
+    social_first_name String?
+    social_last_name String?
+    is_social_friend NSNumber?
+    bi String?
+
+rec Push
+    userMeta UserMeta?
+    users {String : User}?
+    messageNotifies {String : MessageNotify}?
+    answerNotifies {String : AnswerNotify}?
+    followersNotifies {String : FollowerNotify}?
+    contactsSearchResult {String : Contact}?
+    feedCards {String : FeedCard}?
+
+met Notifications.MessagesLoad as msgNotifications
+    bi String
+    count NSNumber
+
+met Notifications.AnswersLoad as answersNotifications
+    bi String
+    count NSNumber
+
+met notifications.getFollowers as followersNotifications: FollowerNotifyResponse
+    bi String
+    count NSNumber
+
+rec FollowerNotifyResponse: WithPush
+    followersNotifies [String]?
+    push Push?
+
+met contacts.searchByName as searchByName: ContactListResponse
+    name String
+    bi String
+    count NSNumber
+
+met contacts.getContacts as getContacts: ContactListResponse
+    bi String
+    count NSNumber
+
+rec ContactListResponse: WithPush
+    push Push?
+    contactsSearchResult [String]?
+
+met Image.makeChatPhoto as makeChatPhoto: MakeImageResponse
+    blobId String
+
+rec MakeImageResponse
+    imageId String?
+
+met Feed.get as getFeed: FeedResponse
+    bi String
+
+rec FeedResponse: WithPush
+    feedCards [String]?
+    push Push?
+
+rec FeedCard
+    bi String
+
+rec MakeQuizImageResponse
+    variant String
+    id String
+    idBig String
+
+met Image.MakeQuizImage as makeQuizImage: MakeQuizImageResponse
+    fileToken String
+    variant String
+
+rec SaveQuestionResponse
+
+met quiz.saveQuestion as saveQuestion: SaveQuestionResponse
+    rightAnswer String
+    upload1 String
+    uploadBig1 String
+    upload2 String
+    uploadBig2 String
+    question String
+    text1 String
+    text2 String
+
+met Notifications.DeleteMessageNotify as deleteMessageNotify
+    notifyId String
+
+met Notifications.DeleteAnswerNotify as deleteAnswerNotify
+    notifyId String
+
+met UserAction.BlockUser as blockUser
+    userId String
+
+
+func server.ping as ping :: () -> ()
+
+func register :: username as userName: String,
+                 password : String
+            -> RegisterResponse
+
+data RegisterResponse :: ok as isOK: ,Bool,
+                         error: Optional<String>
+
+data UserInfo :: username as userName: String,
+                 password: String
+*/
