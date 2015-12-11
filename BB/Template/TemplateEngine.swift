@@ -87,24 +87,21 @@ public func renderTemplate(template: TemplateASTNode,
 
 public func prettifyRenderedTemplate(template: String) -> String {
     let s = (template as NSString).mutableCopy() as! NSMutableString
+  
+    let manyNewlines =
+        try! NSRegularExpression(pattern: "\n(\\s*\n){2,}",
+                                 options: .DotMatchesLineSeparators)
+    manyNewlines.replaceMatchesInString(s,
+                                options: NSMatchingOptions(rawValue: 0),
+                                range: NSMakeRange(0, s.length),
+                                withTemplate: "\n\n")
     
-    let re1 = try! NSRegularExpression(pattern: "\n{2,}",
-                                       options: .DotMatchesLineSeparators)
-    
-    re1.replaceMatchesInString(s, options: NSMatchingOptions(rawValue: 0),
-                               range: NSMakeRange(0, s.length),
-                               withTemplate: "\n\n")
-    
-    let re2 = try! NSRegularExpression(pattern: "\\{(\\s*\n){2,}",
-                                       options: .DotMatchesLineSeparators)
-    re2.replaceMatchesInString(s, options: NSMatchingOptions(rawValue: 0),
-                               range: NSMakeRange(0, s.length),
-                               withTemplate: "{\n")
-    
-    let re3 = try! NSRegularExpression(pattern: "\n(\\s+\n)+",
-                                       options: .DotMatchesLineSeparators)
-    re3.replaceMatchesInString(s, options: NSMatchingOptions(rawValue: 0),
-                               range: NSMakeRange(0, s.length),
-                               withTemplate: "\n")
+    let emptyLineBeforeBrace =
+        try! NSRegularExpression(pattern: "\n(?:\\s*\n)+(\\s*\\})",
+                                 options: .DotMatchesLineSeparators)
+    emptyLineBeforeBrace.replaceMatchesInString(s,
+                                options: NSMatchingOptions(rawValue: 0),
+                                range: NSMakeRange(0, s.length),
+                                withTemplate: "\n$1")
     return s as String
 }

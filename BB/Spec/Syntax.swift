@@ -47,10 +47,14 @@ public let booleanValue =
 public let stringValue =
     try! Regexp("\".*?\"", name: "string")
 
-public let defaultValue =
-    Literal("=") >* (numberValue +|+ stringValue +|+ booleanValue)
+public let enumValue =
+    try! Regexp("\\.[a-zA-Z_0-9]+", name: "enum")
 
-public let typeName = identifier("type name")
+public let defaultValue =
+    Literal("=") >* (numberValue +|+ stringValue +|+ booleanValue +|+ enumValue)
+
+public let typeName =
+    try! Regexp("([\\[\\]<>a-zA-Z0-9_]+(\\s*:\\s*)?)+", name: "type")
 
 public let typeDefinition =
     (Literal(":") >* typeName *>* Maybe(Literal("?"))) |> toType()
@@ -71,7 +75,8 @@ public let structField =
 
 public let structFields =
     Literal("{") >* RepeatUntil(Maybe(skip) >+ structField,
-                                Maybe(skip) >+ Literal("}")) |> first()
+                                Maybe(skip) >+ Literal("}"),
+                        allowZeroMatches: true) |> first()
 
 public let `struct` =
     (Literal("struct") >* qualifiedName *>*
@@ -98,4 +103,5 @@ public let `func` =
 
 public let toplevel = Maybe(skip) >+ (`struct` +|+ `func` +|+ `class`)
 
-public let spec = RepeatUntil(toplevel, Maybe(skip) >+ EndOfStream()) |> first()
+public let spec = RepeatUntil(toplevel, Maybe(skip) >+ EndOfStream(),
+                        allowZeroMatches: true) |> first()

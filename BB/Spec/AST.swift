@@ -11,10 +11,16 @@ public struct QualifiedName: CustomStringConvertible {
     
     public func template(isFirst: Bool, _ isLast: Bool) -> TemplateParameter {
         return .Dict([
-            "clientName": TemplateParameter.Value(clientName),
-            "serverName": TemplateParameter.Value(serverName),
-            "first":      TemplateParameter.Value(isFirst),
-            "last":       TemplateParameter.Value(isLast)
+            "clientName":
+                TemplateParameter.Value(clientName),
+            "capitalizedClientName":
+                TemplateParameter.Value(clientName.customCapitalizedSting),
+            "serverName":
+                TemplateParameter.Value(serverName),
+            "first":
+                TemplateParameter.Value(isFirst),
+            "last":
+                TemplateParameter.Value(isLast)
         ])
     }
 }
@@ -48,8 +54,13 @@ public struct Variable: CustomStringConvertible {
         return name.description + ": " + type.description
     }
 
-    public func template(isFirst: Bool, _ isLast: Bool) -> TemplateParameter {
+    public func template(parentName parentName: QualifiedName,
+                         isFirst: Bool, isLast: Bool,
+                         additionalFields: [String : TemplateParameter])
+                    -> TemplateParameter
+    {
         var dict: [String : TemplateParameter] = [
+            "parentName": parentName.template(false, false),
             "name":  name.template(false, false),
             "type":  type.template(false, false),
             "first": TemplateParameter.Value(isFirst),
@@ -58,60 +69,38 @@ public struct Variable: CustomStringConvertible {
         if let defaultValue = defaultValue {
             dict["defaultValue"] = .Value(defaultValue)
         }
+        for (key, value) in additionalFields {
+            dict[key] = value
+        }
         return .Dict(dict)
     }
 }
 
-public enum ASTNode: CustomStringConvertible {
+public enum ASTNode {
     case Struct(name: QualifiedName, protocols: [String], fields: [Variable])
     case Class(name: QualifiedName, protocols: [String], fields: [Variable])
     
     case Func(name: QualifiedName, arguments: [Variable], returnType: Type)
     case CastFunc(name: QualifiedName, arguments: [Variable])
     
-    
-    public var description: String {
-        switch self {
-            case let .Struct(name, protocols, fields):
-                let protoStr = protocols.joinWithSeparator(", ")
-                let proto = protoStr.isEmpty ? "" : ": \(protoStr)"
-                return "struct \(name)\(proto) {\n  " +
-                            fields.map({ $0.description }).joinWithSeparator(",\n  ") +
-                       "\n}"
-            
-            case let .Class(name, protocols, fields):
-                let protoStr = protocols.joinWithSeparator(", ")
-                let proto = protoStr.isEmpty ? "" : ": \(protoStr)"
-                return "class \(name)\(proto) {\n  " +
-                            fields.map({ $0.description }).joinWithSeparator(",\n  ") +
-                       "\n}"
-            
-            case let .Func(name, args, returnType):
-                return "func \(name)(" +
-                            args.map({ $0.description }).joinWithSeparator(", ") +
-                       ") -> " + returnType.description
-            
-            case let .CastFunc(name, args):
-                return "@cast func \(name)(" +
-                            args.map({ $0.description }).joinWithSeparator(", ") +
-                       ")"
-        }
-    }
-    
     public var template: TemplateParameter {
         switch self {
             case let .Struct(name, protocols, fields):
-                return structTemplate(name, protocols: protocols, fields: fields)
+                return structTemplate("struct", name: name,
+                                      protocols: protocols, fields: fields)
             
             case let .Class(name, protocols, fields):
-                return structTemplate(name, protocols: protocols, fields: fields)
+                return structTemplate("class", name: name,
+                                      protocols: protocols, fields: fields)
             
             case let .Func(name, args, returnType):
                 return .Dict(["func":
                     .Dict([
                         "name":       name.template(false, false),
                         "args":       TemplateParameter.Array(args.mapWithFirstLast {
-                                          $0.template($1, $2)
+                                          $0.template(parentName: name,
+                                                      isFirst: $1, isLast: $2,
+                                                      additionalFields: [:])
                                       }),
                         "returnType": returnType.template(false, false)
                     ])])
@@ -121,16 +110,24 @@ public enum ASTNode: CustomStringConvertible {
                     .Dict([
                         "name": name.template(false, false),
                         "args": TemplateParameter.Array(args.mapWithFirstLast {
-                                    $0.template($1, $2)
+                                    $0.template(parentName: name,
+                                                isFirst: $1, isLast: $2,
+                                                additionalFields: [:])
                                 })
                     ])])
         }
     }
     
-    public func structTemplate(name: QualifiedName, protocols: [String],
+    public func structTemplate(type: String,
+                               name: QualifiedName, protocols: [String],
                                fields: [Variable]) -> TemplateParameter
     {
-        return .Dict(["struct":
+        let fieldsCopy = TemplateParameter.Array(fields.mapWithFirstLast {
+            $0.template(parentName: name,
+                        isFirst: $1, isLast: $2,
+                        additionalFields: [:])
+        })
+        return .Dict([type:
             .Dict([
                 "name":      name.template(false, false),
                 "protocols": TemplateParameter.Array(
@@ -142,35 +139,55 @@ public enum ASTNode: CustomStringConvertible {
                                     ])
                                 })),
                 "fields":    TemplateParameter.Array(fields.mapWithFirstLast {
-                                $0.template($1, $2)
+                                $0.template(parentName: name,
+                                            isFirst: $1, isLast: $2,
+                                            additionalFields: ["fields" : fieldsCopy])
                              }),
                 "optionalFields":
                     TemplateParameter.Array(fields.filter({
                             $0.type.isOptional
                         })
                         .mapWithFirstLast {
-                            $0.template($1, $2)
+                            $0.template(parentName: name,
+                                        isFirst: $1, isLast: $2,
+                                        additionalFields: [:])
                         }),
                 "nonOptionalFields":
                     TemplateParameter.Array(fields.filter({
                             !$0.type.isOptional
                         })
                         .mapWithFirstLast {
-                            $0.template($1, $2)
+                            $0.template(parentName: name,
+                                        isFirst: $1, isLast: $2,
+                                        additionalFields: [:])
                         }),
+                "hasNonOptionalNonDefaultFields":
+                    TemplateParameter.Value(!fields.filter({
+                        !$0.type.isOptional && $0.defaultValue == nil
+                    }).isEmpty),
+                
+                "doNotHaveNonOptionalNonDefaultFields":
+                    TemplateParameter.Value(fields.filter({
+                        !$0.type.isOptional && $0.defaultValue == nil
+                    }).isEmpty),
+                
                 "nonOptionalNonDefaultFields":
                     TemplateParameter.Array(fields.filter({
                             !$0.type.isOptional && $0.defaultValue == nil
                         })
                         .mapWithFirstLast {
-                            $0.template($1, $2)
+                            $0.template(parentName: name,
+                                        isFirst: $1, isLast: $2,
+                                        additionalFields: [:])
                         }),
                 "defaultFields":
                     TemplateParameter.Array(fields.filter({
                             $0.defaultValue != nil
                         })
                         .mapWithFirstLast {
-                            $0.template($1, $2)
+                            $0.template(parentName: name,
+                                        isFirst: $1, isLast: $2,
+                                        additionalFields: [:])
                         })
                     ])])
     }
@@ -184,5 +201,12 @@ private extension Array {
             result.append(transform(element, i == 0, i == lastIndex))
         }
         return result
+    }
+}
+
+private extension String {
+    var customCapitalizedSting: String {
+        guard let firstChar = characters.first else { return "" }
+        return String(firstChar).capitalizedString + String(characters.dropFirst())
     }
 }

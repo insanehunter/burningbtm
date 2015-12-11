@@ -69,9 +69,11 @@ do {
         }
     }
     catch let e as FailedExpectation {
-        print(e.debugDescription)
+        print("fatal error: " + e.debugDescription)
+        exit(1)
     }
 }
 catch let e as FailedExpectation {
-    print(e.description)
+    print("fatal error: " + e.description)
+    exit(1)
 }

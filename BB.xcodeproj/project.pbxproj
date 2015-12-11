@@ -48,7 +48,7 @@
 /* Begin PBXFileReference section */
 		431F6AAB1B984FE600BE0A8C /* Transformers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Transformers.swift; sourceTree = "<group>"; };
 		431F6AAD1B98E44D00BE0A8C /* Aggregate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Aggregate.swift; sourceTree = "<group>"; };
-		432495BC1B93A91700DC50C6 /* BB */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = BB; sourceTree = BUILT_PRODUCTS_DIR; };
+		432495BC1B93A91700DC50C6 /* burningbtm */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = burningbtm; sourceTree = BUILT_PRODUCTS_DIR; };
 		432495BF1B93A91700DC50C6 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		432495C71B93A95400DC50C6 /* AnyOf.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AnyOf.swift; sourceTree = "<group>"; };
 		432495C81B93A95400DC50C6 /* EndOfStream.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EndOfStream.swift; sourceTree = "<group>"; };
@@ -99,7 +99,7 @@
 		432495BD1B93A91700DC50C6 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				432495BC1B93A91700DC50C6 /* BB */,
+				432495BC1B93A91700DC50C6 /* burningbtm */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -192,7 +192,7 @@
 			);
 			name = BB;
 			productName = BB;
-			productReference = 432495BC1B93A91700DC50C6 /* BB */;
+			productReference = 432495BC1B93A91700DC50C6 /* burningbtm */;
 			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
@@ -342,8 +342,12 @@
 		432495C41B93A91700DC50C6 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				DEPLOYMENT_LOCATION = YES;
+				DEPLOYMENT_POSTPROCESSING = YES;
+				DSTROOT = $PROJECT_DIR;
+				INSTALL_PATH = /Deployment;
 				LLVM_LTO = YES;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = burningbtm;
 				SWIFT_DISABLE_SAFETY_CHECKS = YES;
 			};
 			name = Debug;
@@ -351,8 +355,12 @@
 		432495C51B93A91700DC50C6 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				DEPLOYMENT_LOCATION = YES;
+				DEPLOYMENT_POSTPROCESSING = YES;
+				DSTROOT = $PROJECT_DIR;
+				INSTALL_PATH = /Deployment;
 				LLVM_LTO = YES;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = burningbtm;
 				SWIFT_DISABLE_SAFETY_CHECKS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 			};
