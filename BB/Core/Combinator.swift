@@ -2,7 +2,7 @@
  * (c) Kotiki, 2015
  */
 public protocol Combinator: CustomStringConvertible {
-    typealias ValueType
+    associatedtype ValueType
     
     func match(context: ParserContext)
             throws -> (value: ValueType, context: ParserContext,

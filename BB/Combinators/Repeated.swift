@@ -10,9 +10,10 @@ public struct Repeated<C: Combinator> : Combinator {
         _combinator = combinator
     }
 
-    public func match(var context: ParserContext)
+    public func match(context: ParserContext)
                     throws -> (value: ValueType, context: ParserContext,
                                expectation: Expectation) {
+        var context = context
         var result = ValueType()
         do {
             while (true) {
