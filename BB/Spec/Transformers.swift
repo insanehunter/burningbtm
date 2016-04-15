@@ -74,6 +74,15 @@ public func toStruct() -> Transformer<((QualifiedName, [String]?), [Variable]), 
     )
 }
 
+public func toProtocol() -> Transformer<((QualifiedName, [String]?), [Variable]), ASTNode> {
+    return Transformer(
+        transformValue: { (arg0, fields) in
+            let (name, protocols) = arg0
+            return .Protocol(name: name, protocols: protocols ?? [], fields: fields)
+        }
+    )
+}
+
 public func toClass() -> Transformer<((QualifiedName, [String]?), [Variable]), ASTNode> {
     return Transformer(
         transformValue: { (arg0, fields) in

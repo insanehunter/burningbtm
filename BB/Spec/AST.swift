@@ -77,6 +77,7 @@ public struct Variable: CustomStringConvertible {
 }
 
 public enum ASTNode {
+    case Protocol(name: QualifiedName, protocols: [String], fields: [Variable])
     case Struct(name: QualifiedName, protocols: [String], fields: [Variable])
     case Class(name: QualifiedName, protocols: [String], fields: [Variable])
     
@@ -87,6 +88,10 @@ public enum ASTNode {
         switch self {
             case let .Struct(name, protocols, fields):
                 return structTemplate("struct", name: name,
+                                      protocols: protocols, fields: fields)
+            
+            case let .Protocol(name, protocols, fields):
+                return structTemplate("protocol", name: name,
                                       protocols: protocols, fields: fields)
             
             case let .Class(name, protocols, fields):
