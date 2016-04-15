@@ -34,4 +34,9 @@
     let hello = 2
     let x = \[hello, 1, 2, 3\]
 }]
+
+[protocol public protocol [name[clientName]] {
+    [fields[name public var [clientName]]: [type[name][isOptional?]]
+    ]
+}]
 ]
