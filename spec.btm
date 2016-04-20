@@ -8,6 +8,10 @@ func followUserWithId2 as "followers.add" () -> AnswerNotify
 func followUserWithId3 as "followers.add" (userId as "user_id": String,
                                           anotherId: String = "")
 
+protocol SomeProtocol {
+    var someProperty: Bool
+}
+
 struct User as "users" {
     let id: String
     let name: String

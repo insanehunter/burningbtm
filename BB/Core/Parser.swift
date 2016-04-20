@@ -50,11 +50,11 @@ public struct ParserStream {
         var line = 1, col = 1
         let characters = string.characters
         for index in stream.startIndex..<context.position {
-            col++
+            col += 1
             guard let index = String.CharacterView.Index(index, within: string)
                 else { continue }
             if characters[index] == "\n" {
-                line++
+                line += 1
                 col = 1
             }
         }

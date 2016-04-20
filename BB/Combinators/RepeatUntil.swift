@@ -12,9 +12,10 @@ public struct RepeatUntil<C1: Combinator, C2: Combinator> : Combinator {
         _allowZeroMatches = allowZeroMatches
     }
 
-    public func match(var context: ParserContext)
+    public func match(context: ParserContext)
                     throws -> (value: ValueType, context: ParserContext,
                                expectation: Expectation) {
+        var context = context
         var result: [C1.ValueType] = []
         do {
             while (true) {

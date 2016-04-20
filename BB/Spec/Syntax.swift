@@ -82,6 +82,18 @@ public let `struct` =
     (Literal("struct") >* qualifiedName *>*
         Maybe(protocols) *>* structFields) |> toStruct()
 
+public let protocolField =
+    Literal("var") >* variableDefinition
+
+public let protocolFields =
+    Literal("{") >* RepeatUntil(Maybe(skip) >+ protocolField,
+                                Maybe(skip) >+ Literal("}"),
+                        allowZeroMatches: true) |> first()
+
+public let `protocol` =
+    (Literal("protocol") >* qualifiedName *>*
+        Maybe(protocols) *>* protocolFields) |> toProtocol()
+
 public let `class` =
     (Literal("class") >* qualifiedName *>*
         Maybe(protocols) *>* structFields) |> toClass()
@@ -101,7 +113,7 @@ public let `func` =
     (Maybe(Literal("@cast")) *> Literal("func") *>* qualifiedName *>*
         funcArgs *>* Maybe(funcType)) |> toFunc()
 
-public let toplevel = Maybe(skip) >+ (`struct` +|+ `func` +|+ `class`)
+public let toplevel = Maybe(skip) >+ (`struct` +|+ `func` +|+ `class` +|+ `protocol`)
 
 public let spec = RepeatUntil(toplevel, Maybe(skip) >+ EndOfStream(),
                         allowZeroMatches: true) |> first()
